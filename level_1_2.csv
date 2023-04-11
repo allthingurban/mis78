@@ -1,0 +1,32 @@
+srl. no.,        Item,Length,start,end
+1,FSU Serial No.,5,1,5
+2,Round,2,6,7
+3,Schedule,3,8,10
+4,Sample,1,11,11
+5,Sector,1,12,12
+6,NSS-Region,3,13,15
+7,District,2,16,17
+8,Stratum,2,18,19
+9,Sub-stratum,2,20,21
+10,Sub-Round,1,22,22
+11,FOD-Sub-Region,4,23,26
+12,Sample sub-division no.,3,27,29
+13,Second-stage-stratum no.,1,30,30
+14,Sample hhld. No.,2,31,32
+17,Informant Sl.No.,2,33,34
+18,Response Code,1,35,35
+19,Survey Code,1,36,36
+20,Reason for substitution Code,1,37,37
+21,Employee code,-,,
+22,Employee code,-,,
+23,Employee code,-,,
+24,Date of Survey,-,,
+25,Date of Despatch,-,,
+26,Time to canvass (minutes),3,38,40
+27,No. of investigators (FI/ ASO) in the team,1,41,41
+28,Remarks in block 9/10,-,,
+29,Remarks in block 9/10,-,,
+30,Remarks elsewhere in Sch.,-,,
+31,Remarks elsewhere in Sch.,-,,
+32,NS-Count,3,42,44
+33,Multiplier,10,45,54

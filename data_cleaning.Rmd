@@ -1,0 +1,49 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+
+sample_string="242627805111121010101112100001010111  872  4   11050.0"
+test_data=data.frame()
+
+  for(i in 1:nrow(level_1_2)){
+    if(length(test_data)!=0){
+      test_data=cbind(test_data,as.data.frame(substr(ms51l01$X1,level_1_2[i,4],level_1_2[i,5])))
+    }else{
+      test_data=as.data.frame(substr(ms51l01$X1,level_1_2[i,4],level_1_2[i,5]))
+    }
+    
+  }
+colnames(test_data)=level_1_2$Item
+ 
+write.csv(test_data,"sch5_1_level_1_2.csv",row.names = FALSE)
+
+```
+
+```{r}
+ 
+test_data=data.frame()
+
+  for(i in 1:nrow(level_2)){
+    if(length(test_data)!=0){
+      test_data=cbind(test_data,as.data.frame(substr(ms51l02$X1,level_2[i,4],level_2[i,5])))
+    }else{
+      test_data=as.data.frame(substr(ms51l02$X1,level_2[i,4],level_2[i,5]))
+    }
+    
+  }
+colnames(test_data)=level_2$column_name
+ 
+write.csv(test_data,"sch5_1_level_2.csv",row.names = FALSE)
+```
+

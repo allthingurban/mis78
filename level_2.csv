@@ -1,0 +1,19 @@
+srl. no.,        Item,Length,start,end,column_name
+1,Common-ID,32,1,32,common_id
+2,Person serila no.,2,33,34,Person_sl_num
+3,Relation to head (code),1,35,35,relation_head
+4,Gender (code),1,36,36,gender
+5,Age (years),3,37,39,age
+6,Marital status (code),1,40,40,marital_status
+7,Highest level of education (code),2,41,42,highest_edu_level
+8,Usual principal activity status(code),2,43,44,usual_principal_activity
+9,Usual principal activity: Industry (2 digit code),2,45,46,usual_principal_activity_industry
+10,Usual principal activity: occupation (2 digit code),2,47,48,usual_principal_activity_occupation
+11,Whether uses any mobile phone with active sim card for last three months,1,49,49,mobilephone_activesim_3mnth
+12,Persons of age <=50:whether received birth certificate,1,50,50,age_under50_birthcert
+13,Persons of age <=50: whether regd. With civil authority for birth certificate,1,51,51,age_under50_birthcert_registered
+14,Persons of age>=15 years:whether having account in bank etc.,1,52,52,age_over15_bankaccount
+15,Persons of age>=15 years:type of account,1,53,53,age_over15_accounttype
+16,Whether indebted to any institutional/ non-institutional agency,1,54,54,debt_status
+17,NS-Count,3,55,57,ns_count
+18,Multiplier,10,58,67,multiplier
