@@ -1,0 +1,143 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(tidyselect)
+library(pollster)
+library(arrow)
+```
+
+```{r}
+sch5_1_level_4=read_parquet("/media/abhinav/Data/RStudioProject/mis78/data/sch5_1_level_4.parquet")
+```
+
+This is for test purposes.
+
+```{r}
+colnames(sch5_1_level_4)
+```
+
+```{r}
+sch5_1_level_4=sch5_1_level_4 %>% merge(sch, by.x = "common_id",by.y = "common_id",all.x = TRUE)
+
+
+```
+
+
+```{r}
+quantile(sch5_1_level_4$con_exp_month_/sch5_1_level_4$hhsize,prob = c(0.25,0.50, 0.75,1))
+
+sch5_1_level_4$mpce_quantile=ntile(sch5_1_level_4$con_exp_month_/sch5_1_level_4$hhsize, 4)
+sch5_1_level_4$mpce_quintile=ntile(sch5_1_level_4$con_exp_month_/sch5_1_level_4$hhsize, 5)
+sch5_1_level_4$mpce_decile=ntile(sch5_1_level_4$con_exp_month_/sch5_1_level_4$hhsize, 10)
+
+sch5_1_level_4%>% filter(is.na(mpce_quintile))
+```
+
+
+```{r}
+crosstab_3way(df=sch5_1_level_4%>%filter(sector==2 & state==21),z=dwelling_neighbourhood_type,y=latine_access_type,x=state ,weight = multiplier.y)
+crosstab_3way(df=sch5_1_level_4%>%filter(sector==2 & state==3),z=dwelling_neighbourhood_type,y=latine_access_type,x=state ,weight = multiplier.y)
+
+sch5_1_level_4=sch5_1_level_4 %>%
+  mutate(latrine_yn=if_else(latine_access_type!=5,"Yes","No"))
+
+sch5_1_level_4$latrine_type[sch5_1_level_4$latrine_yn=="No"]="No Latrine"
+
+
+
+crosstab(sch5_1_level_4,y=latrine_type,x=sector,weight = multiplier.y)
+
+crosstab(df=sch5_1_level_4%>%filter(sector==2),x=mpce_quintile,y=dwelling_dist_transport_halfkm,weight = multiplier.y)
+```
+
+```{r}
+library(arrow)
+write_parquet(sch5_1_level_4,"sch5_1_level_4.parquet")
+```
+
+```{r}
+#Prepare data for WASH analysis
+sch5_1_level_4$latrine_type[sch5_1_level_4$latrine_yn=="No"]=0
+sch5_1_level_4=type.convert(sch5_1_level_4,as.is=T)
+write_parquet(mis78_wash=sch5_1_level_4 %>%
+  mutate(overall="Total",
+         sector=case_when(sector==1~"Rural",
+                          sector==2~"Urban"),
+         type_of_area=case_when(sector=="Urban" & substr(common_id,18,19)=="23"~"Million Plus",
+                                sector=="Urban" & substr(common_id,18,19)!="23"~"Non-Million Plus",
+                                sector=="Rural"~"Rural"),
+         sanitation_system=case_when(latrine_type ==1~"Sewer",
+                                    latrine_type ==2~"Septic Tank",
+                                    latrine_type ==3~"Twin Pit",
+                                    latrine_type %in% c(4,7)~"Single Pit",
+                                    latrine_type ==8~"Open Pit",
+                                    latrine_type %in%c(6,10)~"Composting/VI Pit",
+                                    latrine_type %in% c(11,19,5)~"Others",
+                                    latrine_type ==0~"No Latrine"),
+         latrine_access_recoded=case_when(latine_access_type ==1~"Exclusive for Household",
+                                    latine_access_type ==2~"Shared use in Building",
+                                    latine_access_type ==3~"Unpaid PT/CT",
+                                    latine_access_type ==4~"Paid PT/CT",
+                                    latine_access_type ==9~"Others",
+                                    latine_access_type ==5~"No Latrine"),
+         dw_source_recoded=case_when(dw_source %in% c(2,3)~"Exclusive Piped Water",
+                                     dw_source %in% c(4,5)~"Shared Piped Water",
+                                     dw_source ==7~"Handpump",
+                                     dw_source ==6~"Tubewell",
+                                     dw_source %in% c(8,9)~"Well",
+                                     dw_source ==1~"Bottled Water",
+                                     dw_source %in% c(10,11)~"Tanker",
+                                     dw_source %in% c(12:16)~"Spring/Rainwater/Surfacewater",
+                                     dw_source ==19~"Others"),
+         dw_delivery_system=case_when(dw_source %in% c(2,3,4,5)~"Piped Network",
+                                 dw_source %in% c(6,7,8,9,10,11)~"Non-netowrked Water",
+                                 dw_source %in% c(12:16,19)~"No System"),
+         dw_source_nature=case_when(dw_source%in%c(2,3,4,5,1,10,11,19)~"Mixed Source",
+                                    dw_source %in% c(7,6,8,9)~"Ground Water",
+                                    dw_source %in% c(12:16)~"Surface water"),
+         dw_access_recoded=case_when(dw_source_access ==1~"Exclusive",
+                                     dw_source_access ==2~"Shared Building",
+                                     dw_source_access ==3~"Neighbour's Scource",
+                                     dw_source_access ==4~"Restricted Public",
+                                     dw_source_access ==5~"Unrestricted Public",
+                                     dw_source_access %in% c(6,7)~"Private Source",
+                                     dw_source_access ==9~"Others"),
+         dw_source_distance_recoded=case_when(dw_source_distance==1~"Within Dwelling",
+                                      dw_source_distance==2~"Within Premises",
+                                      dw_source_distance%in%c(3,4,5)~"< 1Km",
+                                      dw_source_distance%in%c(6,7)~"> 1Km"),
+         dw_fetch_time_recoded=if_else(is.na(dw_fetch_time),0,dw_fetch_time),
+         access_bathroom_recoded=case_when(access_bathroom==1~"Exclusive for Household",
+                                           access_bathroom==2~"Common use in Building",
+                                           access_bathroom==3~"Free Community/Public use",
+                                           access_bathroom==4~"Paid Community/Public use",
+                                           access_bathroom==9~"Others",
+                                           access_bathroom==5~"No Bathroom"),
+         handwash_premises_recoded=case_when(handwash_premises==1~"Water and Soap",
+                                             handwash_premises==1~"Water and Ash/Sand/Mud",
+                                             handwash_premises==1~"Only Water",
+                                             handwash_premises==1~"No Handwash facility in premises"),
+         garbage_collection_agency_recoded=case_when(garbage_collection_agency==1~"Government",
+                                                     garbage_collection_agency==2~"Community/NGO",
+                                                     garbage_collection_agency==9~"NGO/Charitable",
+                                                     garbage_collection_agency==3~"Not known",
+                                                     garbage_collection_agency==4~"No Arrangement"),
+         garbage_disposal_place_recoded=case_when(garbage_disposal_place==1~"Biogas/Manure",
+                                                  garbage_disposal_place==2~"Household Dumping Spot",
+                                                  garbage_disposal_place==3~"Community Dumping Spot",
+                                                  garbage_disposal_place==4~"Common Dumping spot",
+                                                  garbage_disposal_place==9~"Others",
+                                                  garbage_disposal_place==5~"Not Known"),
+         garbage_collection_freq_recoded=case_when(garbage_collection_freq==1~"Daily Collection",
+                                                   garbage_collection_freq==2~"At least Weekly",
+                                                   garbage_collection_freq==3~"More than a week",
+                                                   garbage_collection_freq==4~"Not Known")
+         )%>%
+  select(1,51:56,22:24,32:35,58:72),"Water-and-Sanitation_files/mis78_wash.parquet")
+```
+
